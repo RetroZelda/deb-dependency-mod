@@ -1,0 +1,44 @@
+#!/bin/bash
+
+print_help()
+{
+	echo usage: $(basename $0) src dest
+}
+
+ROOT=$(pwd)
+DEB_FILE=$1
+SAVE_FILE=$2
+
+if [ -z "$DEB_FILE" ]
+then
+	print_help
+	exit 1
+fi
+
+
+if [ -z "$SAVE_FILE" ]
+then
+	print_help
+	exit 1
+fi
+
+
+FILENAME=$(basename $DEB_FILE)
+TEMP_DIR=/tmp/$DEB_FILE
+
+echo opening $DEB_FILE
+
+mkdir -p $TEMP_DIR
+cp $DEB_FILE $TEMP_DIR/$DEB_FILE
+cd $TEMP_DIR
+dpkg-deb -x $FILENAME .
+dpkg-deb --control $FILENAME
+
+nano DEBIAN/control
+
+rm $FILENAME
+cd $ROOT
+dpkg -b $TEMP_DIR $SAVE_FILE
+echo saved $SAVE_FILE
+
+rm -d -r -f $TEMP_DIR
